@@ -13,33 +13,30 @@ while (request != "/exit")
         request = Console.ReadLine();
         if (request == "/end")
         {
-            req.Add(Guid.NewGuid().ToString("D"));
             break;
         }
         if (request == "/exit")
         {
-            req.Add(Guid.NewGuid().ToString("D"));
             return;
         }
         req.Add(request);
     } while (request != "/end");
-    new Thread(() =>
+    ThreadPool.QueueUserWorkItem(callBack =>
     {
         var dummy = new DummyRequestHandler();
         var res = "";
-        Console.WriteLine($"!!!Сообщение {msg} было отправлено, идентификатор: {req.Last()}");
+        var ident = Guid.NewGuid().ToString("D");
+        Console.WriteLine($"!!!Сообщение {msg} было отправлено, идентификатор: {ident}");
         try
         {
-             res = $"-->Сообщение с идентификатором {req.Last()} получило ответ: {dummy.HandleRequest(msg, req.ToArray())}";
-            
+            res = $"-->Сообщение с идентификатором {ident} получило ответ: {dummy.HandleRequest(msg, req.ToArray())}";
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            res = $"-->Сообщение с идентификатором {req.Last()} упало с ошибкой: {ex.Message}";
+            res = $"-->Сообщение с идентификатором {ident} упало с ошибкой: {ex.Message}";
         }
         Console.WriteLine(res);
-    })
-    {IsBackground = true}.Start();
+    });
     Console.WriteLine("-->Введите текст запроса, для выхода /exit");
     request = Console.ReadLine();
 
